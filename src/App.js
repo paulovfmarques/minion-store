@@ -1,18 +1,31 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
+import ReservationProvider from "./contexts/reservationContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ProductList from "./pages/ProductList";
+import FormPage from "./pages/FormPage";
+import SuccessPage from "./pages/SuccessPage";
 
 function App() {
   return (
-    <>
+    <ReservationProvider>
       <GlobalStyle/>
-      <Header/>
-      <ProductList/>
+
+      <Router>
+        <Header/>
+
+        <Switch>
+          <Route path="/" exact component={ProductList}/>
+          <Route path="/reservation/:id" component={FormPage}/>
+          <Route path="/success" component={SuccessPage}/>
+        </Switch>
+
+      </Router>
       <Footer/>
-    </>
+
+    </ReservationProvider>
   );
 }
 
