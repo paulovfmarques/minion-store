@@ -1,12 +1,18 @@
 import React from "react";
+import { useHistory } from "react-router-dom";
 import styled from "styled-components";
 import LogoMinion from "../assets/logo-minion.png";
 
 export default function Header() {
+
+    const history = useHistory();
+
     return (
         <Container>
-            <TiltedHeader/>
-            <h1>MINION STORE</h1>
+            <TiltedHeader/>            
+            <h1 onClick={() => history.push("/")}>
+                MINION STORE
+            </h1>
             <Logo src={LogoMinion}/>
         </Container>
     );
@@ -25,14 +31,14 @@ const Container = styled.div`
 
     h1{
         position: absolute;
-        top:4.5rem;
-        left: calc(33vw);
-        width:100%;
+        top:7.5rem;
+        left: calc(33vw);        
         color: #A87A51;
         font-family: var(--titleFont);
         font-size: 5rem;
         text-shadow: 2px 2px 6px #000000;
-        transform: rotate(-4.13deg);        
+        transform: rotate(-4.13deg);
+        cursor: pointer;
     }
 `;
 

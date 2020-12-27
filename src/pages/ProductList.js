@@ -10,8 +10,9 @@ export default function ProductList() {
                 {
                     productData.map(product => {
                         return (
-                            <Product 
+                            <Product
                             key={product.id}
+                            id={product.id}
                             image={product.image}
                             title={product.title}
                             description={product.description}
@@ -28,8 +29,7 @@ export default function ProductList() {
 const ListContainer = styled.div`
     margin-top: calc(50vh - 20.4rem);
     width:100%;
-    height:auto;
-    background-color:#f3f3f3;
+    height:auto;    
     display:flex;
     align-items:center;
     justify-content:center;
