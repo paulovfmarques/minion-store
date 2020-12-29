@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { reservationContext } from "../contexts/reservationContext";
+import ShoppingGif from "../assets/giphy.gif"
 
 export default function SuccessPage() {
     const { reservationDone } = useContext(reservationContext);
@@ -12,7 +13,7 @@ export default function SuccessPage() {
                 {reservationDone ? (
                     <>
                         <h1>CONGRATULATIONS!</h1>
-                        <img src="https://media.giphy.com/media/z2D26GunfUK1W/giphy.gif" alt="shopping"/>
+                        <img src={ShoppingGif} alt="shopping"/>
                         <h2>Now just wait patiently as
                         we set things up for you to buy your minion!
                         </h2>

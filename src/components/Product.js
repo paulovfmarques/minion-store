@@ -1,8 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import LoadingGif2 from "../assets/loading2.gif";
+import Loading from "./Loading";
 
-export default function Product({disable = false, id,image,title,description,price}) {
+export default function Product({disable = false, id,imageKey,title,description,price}) {
+    const [image, setImage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);   
+
+    const fetchImage = async () => {
+        setIsLoading(true);
+        try{
+            const url = await API.get('list', `/image/${imageKey}`);
+            setImage(url);
+        }catch(err){
+            console.error(err.message);
+        }
+        setIsLoading(false);
+    };
+
+    useEffect(() => fetchImage(),[]);
+    
+
     return (
         
         <ProductContainer>
@@ -10,14 +30,14 @@ export default function Product({disable = false, id,image,title,description,pri
                 onClick={(e) => 
                 {if(disable) e.preventDefault()}}
             >
-                <img src={image} alt={title}/>
+                <img src={isLoading ? LoadingGif2 : image} alt={title}/>
                 <div>
                     <span>
-                        <h1>{title}</h1>
-                        <p>{price}</p>
+                        <h1>{isLoading ? "loading" : title}</h1>
+                        <p>{isLoading ? "loading" : price}</p>
                     </span>
                     <sub>
-                        {description}
+                        {isLoading ? "loading" : description}
                     </sub>
                 </div>
             </Link>

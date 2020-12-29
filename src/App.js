@@ -1,12 +1,40 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
+import { Amplify } from "aws-amplify";
+import config from "./utils/config";
 import ReservationProvider from "./contexts/reservationContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ProductList from "./pages/ProductList";
 import FormPage from "./pages/FormPage";
 import SuccessPage from "./pages/SuccessPage";
+
+Amplify.configure({ 
+  Storage: {
+    region: config.s3.REGION,
+    bucket: config.s3.BUCKET,
+  },
+  API: {
+    endpoints: [
+      {
+        name: "reservation",
+        endpoint: config.apiGateway.URL,
+        region: config.apiGateway.REGION,
+      },
+      {
+        name: "list",
+        endpoint: config.apiGateway.URL,
+        region: config.apiGateway.REGION,
+      },
+      {
+        name: "confirmation",
+        endpoint: config.apiGateway.URL,
+        region: config.apiGateway.REGION,
+      },
+    ],
+  },
+});
 
 function App() {
   return (

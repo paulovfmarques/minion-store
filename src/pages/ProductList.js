@@ -1,27 +1,49 @@
-import React from "react";
+import React, { useEffect, useContext, useState } from "react";
 import styled from "styled-components";
-import { productData } from "../data/product-data";
+import { API } from "aws-amplify";
+import { reservationContext } from "../contexts/reservationContext";
 import Product from "../components/Product";
+import Loading from "../components/Loading";
 
-export default function ProductList() {
+export default function ProductList() {    
+    const { productsArr, setProductsArr } = useContext(reservationContext);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const listProducts = async () => {
+        setIsLoading(true);
+        try{
+            const result = await API.get("list","/list");
+            setProductsArr(result);
+        }catch(err){
+            console.log(err)
+        }
+        setIsLoading(false);
+    };
+
+    useEffect(() => listProducts(),[]);    
+
     return (
         <ListContainer>
-            <div>
-                {
-                    productData.map(product => {
-                        return (
-                            <Product
-                            key={product.id}
-                            id={product.id}
-                            image={product.image}
-                            title={product.title}
-                            description={product.description}
-                            price={product.price}
-                            />
-                        );
-                    })
-                }
-            </div>
+            {isLoading ? (
+                <Loading />
+            ) : (
+                <div>
+                    {productsArr &&
+                        productsArr.map(prod => {
+                            return (
+                                <Product
+                                key={prod.minionId}
+                                id={prod.minionId}
+                                imageKey={prod.attachment}
+                                title={prod.content.title}
+                                description={prod.content.description}
+                                price={prod.content.price}
+                                />
+                            );
+                        })
+                    }
+                </div>
+            )}
         </ListContainer>
     );
 }

@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
+import { API } from "aws-amplify";
 import { useHistory, useParams } from "react-router";
-import { productData } from "../data/product-data";
 import Product from "../components/Product";
+import Loading from "../components/Loading";
 import { reservationContext } from "../contexts/reservationContext";
 import { formatPhone, cpfMask } from "../utils/masks";
 
@@ -12,98 +13,142 @@ export default function FormPage() {
     const [cpf, setCpf] = useState("");
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    const { setReservationDone } = useContext(reservationContext);
+    const { setReservationDone, productsArr } = useContext(reservationContext);
 
     const { id } = useParams();
     const history = useHistory();
 
-    useEffect(() => setReservationDone(false),[]);
+    useEffect(() => setReservationDone(false),[]);     
 
-    const submitHandler = (e) => {
+    const { attachment,
+            content,
+            } = productsArr.filter(prod => prod.minionId === id)[0];
+    
+    const submitHandler = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+
+        const reservationObj = {
+            minionId: id,
+            content: {
+                reservation: {
+                    name,
+                    cpf,
+                    phone,
+                    email,
+                },
+                product: {
+                    title: content.title,
+                    price: content.price,
+                },
+            },
+        };
+
+        try{
+            await API.put("reservation","/reservation",{
+                body: reservationObj,
+            });
+
+            await API.post("confirmation","/confirmation",{
+                body: {
+                    toUser: email,
+                    subject: "Your purchase reservation is complete!",
+                    emailContent: `You sucessfully reservated your ${content.title} for ${content.price}.
+                    Check your info:
+                    / Name: ${name} /
+                    / SSN-CPF: ${cpf} /
+                    / Phone: ${phone} /
+                    `,
+                },
+            });
+
+        }catch(err){
+            console.log(err.message)
+        }
+        setIsLoading(false);
         setReservationDone(true);
         history.push("/success")
-    }
+    };
 
-   
-
-    const { image,
-            title,
-            description,
-            price } = productData.filter(prod => prod.id.toString() === id)[0];
-    
     return (
         <ReservationContainer>
-            <Product
-            disable={true}
-            image={image}
-            title={title}
-            description={description}
-            price={price}
-            />
-            <FormContainer>
-                <span>
-                    <h2>
-                        Fill out the form below to complete your reservation                    
-                    </h2>
-                    <ReturnButton onClick={() => history.push("/")}>
-                        Cancel
-                    </ReturnButton>
-                </span>
-                <Form onSubmit={e => submitHandler(e)}>
-                    <div>
-                        <span>
-                            <label htmlFor="name">Name</label>
-                            <input
-                            onChange={e => setName(e.target.value)}
-                            value={name}
-                            type="text" 
-                            required 
-                            id="name" 
-                            name="name" 
-                            placeholder="Enter your name..."/>
-                        </span>
-                        <span>
-                            <label htmlFor="cpf">SSN/CPF</label>
-                            <input
-                            onChange={e => cpfMask(e.target.value, setCpf)}
-                            maxLength="14"
-                            value={cpf}
-                            type="text" 
-                            required 
-                            id="cpf" 
-                            name="cpf" 
-                            placeholder="Enter your SSN/CPF..."/>
-                        </span>
-                    </div>
-                    <div>
-                        <span>
-                            <label htmlFor="phone">Phone</label>
-                            <input
-                            onChange={(e) => formatPhone(e.target.value, setPhone)}
-                            maxLength="11"
-                            value={phone}
-                            type="tel" 
-                            required 
-                            id="phone" 
-                            name="phone" 
-                            placeholder="Enter your phone..."/>
-                        </span>
-                        <span>
-                            <label htmlFor="email">E-Mail</label>
-                            <input
-                            onChange={e => setEmail(e.target.value)}
-                            value={email} 
-                            type="email" 
-                            required id="email" 
-                            name="email" 
-                            placeholder="Enter your E-Mail..."/>
-                        </span>
-                    </div>
-                    <CompleteButton type="submit">Complete</CompleteButton>
-                </Form>
-            </FormContainer>
+            {isLoading ? (
+                <Loading />
+            ) : (
+            <>
+                <Product
+                disable={true}
+                imageKey={attachment}
+                title={content.title}
+                description={content.description}
+                price={content.price}
+                />
+                <FormContainer>
+                    <span>
+                        <h2>
+                            Fill out the form below to complete your reservation                    
+                        </h2>
+                        <ReturnButton onClick={() => history.push("/")}>
+                            Cancel
+                        </ReturnButton>
+                    </span>
+                    <Form onSubmit={e => submitHandler(e)}>
+                        <div>
+                            <span>
+                                <label htmlFor="name">Name</label>
+                                <input
+                                onChange={e => setName(e.target.value)}
+                                value={name}
+                                type="text" 
+                                required 
+                                id="name" 
+                                name="name" 
+                                placeholder="Enter your name..."/>
+                            </span>
+                            <span>
+                                <label htmlFor="cpf">SSN/CPF</label>
+                                <input
+                                onChange={e => cpfMask(e.target.value, setCpf)}
+                                maxLength="14"
+                                value={cpf}
+                                type="text" 
+                                required 
+                                id="cpf" 
+                                name="cpf" 
+                                placeholder="Enter your SSN/CPF..."/>
+                            </span>
+                        </div>
+                        <div>
+                            <span>
+                                <label htmlFor="phone">Phone</label>
+                                <input
+                                onChange={(e) => formatPhone(e.target.value, setPhone)}
+                                maxLength="11"
+                                value={phone}
+                                type="tel" 
+                                required 
+                                id="phone" 
+                                name="phone" 
+                                placeholder="Enter your phone..."/>
+                            </span>
+                            <span>
+                                <label htmlFor="email">E-Mail</label>
+                                <input
+                                onChange={e => setEmail(e.target.value)}
+                                value={email} 
+                                type="email" 
+                                required id="email" 
+                                name="email" 
+                                placeholder="Enter your E-Mail..."/>
+                            </span>
+                        </div>
+                        <CompleteButton type="submit">Complete</CompleteButton>
+                    </Form>
+                </FormContainer>
+            </>
+            )}
         </ReservationContainer>
     );
 }
