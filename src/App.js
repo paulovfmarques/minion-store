@@ -6,6 +6,8 @@ import config from "./utils/config";
 import ReservationProvider from "./contexts/reservationContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import SignIn from "./pages/SignInPage";
+import Register from "./pages/RegisterPage";
 import ProductList from "./pages/ProductList";
 import FormPage from "./pages/FormPage";
 import SuccessPage from "./pages/SuccessPage";
@@ -46,6 +48,8 @@ function App() {
 
         <Switch>
           <Route path="/" exact component={ProductList}/>
+          <Route path="/sign-in" component={SignIn}/>
+          <Route path="/register" component={Register}/>
           <Route path="/reservation/:id" component={FormPage}/>
           <Route path="/success" component={SuccessPage}/>
         </Switch>
