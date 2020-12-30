@@ -16,6 +16,7 @@ export default function Register() {
                         <span>
                             <label htmlFor="name">Name</label>
                             <input
+                            autoFocus
                             value={name}
                             onChange={e => setName(e.target.value)}
                             type="text" 

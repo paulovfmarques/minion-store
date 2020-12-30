@@ -1,20 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useHistory } from "react-router-dom";
+import { userContext } from "../contexts/userContext";
 import styled from "styled-components";
+import { Auth } from "aws-amplify";
 
 export default function SignIn() {
-    const [email, setEmail] = useState("");
-    const [pwd, setPwd] = useState("");
+    const { setIsLogged } = useContext(userContext);    
 
+    const [email, setEmail] = useState("admin@example.com");
+    const [pwd, setPwd] = useState("JN4t24..");
+
+    const history = useHistory();
+
+    const handleSignIn = async (e) => {
+        e.preventDefault();
+
+        try {
+            await Auth.signIn(email, pwd);
+            setIsLogged(true);
+            history.push("/")
+        } catch (e) {
+            alert(e.message);
+        }
+    };
 
     return (
         <Container>
             <SignInContainer>
                 <h1>WELCOME!</h1>
-                <Form onSubmit={e => e.preventDefault()}>
+                <Form onSubmit={e => handleSignIn(e)}>
                     <div>
                         <span>
                             <label htmlFor="name">E-mail</label>
                             <input
+                            autoFocus
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             type="email" 

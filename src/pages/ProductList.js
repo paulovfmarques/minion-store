@@ -1,12 +1,15 @@
 import React, { useEffect, useContext, useState } from "react";
 import styled from "styled-components";
-import { API } from "aws-amplify";
+import { API, Auth } from "aws-amplify";
+import { userContext } from "../contexts/userContext";
 import { reservationContext } from "../contexts/reservationContext";
 import Product from "../components/Product";
 import Loading from "../components/Loading";
 
 export default function ProductList() {    
     const { productsArr, setProductsArr } = useContext(reservationContext);
+    const { setIsLogged } = useContext(userContext);
+    const [isAuthenticating, setIsAuthenticating] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
     const listProducts = async () => {
@@ -20,11 +23,26 @@ export default function ProductList() {
         setIsLoading(false);
     };
 
-    useEffect(() => listProducts(),[]);    
+    async function persistSignIn() {
+        setIsAuthenticating(true);
+        try {
+            await Auth.currentSession();
+            setIsLogged(true);
+        }
+        catch(err) {
+            console.log(err)
+        }
+        setIsAuthenticating(false);
+    }
+
+    useEffect(() => {
+        persistSignIn();
+        listProducts();
+    },[]);    
 
     return (
         <ListContainer>
-            {isLoading ? (
+            {isLoading || isAuthenticating ? (
                 <Loading />
             ) : (
                 <div>

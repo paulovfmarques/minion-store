@@ -1,18 +1,39 @@
-import React from "react";
+import React, { useContext } from "react";
+import { Auth } from "aws-amplify";
 import { useHistory } from "react-router-dom";
+import { userContext } from "../contexts/userContext";
 import styled from "styled-components";
 import LogoMinion from "../assets/logo-minion.png";
 
 export default function Header() {
-
+    const { isLogged, setIsLogged } = useContext(userContext);
     const history = useHistory();
+
+    const logoutHandler = async () => {
+        try{
+            await Auth.signOut();
+            setIsLogged(false);
+        }catch(err){
+            console.log(err.message)
+        }    
+    };    
 
     return (
         <Container>
-            <TiltedHeader/>            
+            <TiltedHeader/>
             <h1 onClick={() => history.push("/")}>
                 MINION STORE
             </h1>
+            {isLogged ? (
+                <LogOutBtn onClick={() => logoutHandler()}>
+                    Logout
+                </LogOutBtn>
+            ) : (
+                <GoToSignIn onClick={() => history.push("sign-in")}>
+                    Sign In
+                </GoToSignIn>
+            )}
+            
             <Logo src={LogoMinion}/>
         </Container>
     );
@@ -49,8 +70,6 @@ const TiltedHeader = styled.header`
     top: -7.5rem;
     filter: blur(1px);
     background: linear-gradient(269.69deg, #0A75BC 0.8%, #0B99F7 20.89%, rgba(10, 117, 188, 0.87) 22.15%, #FCE029 22.16%, #FCE029 99.5%);
-    
-    /* transform: rotate(4.13deg);    */
 `;
 
 const Logo = styled.img`
@@ -59,3 +78,38 @@ const Logo = styled.img`
     bottom:-0.6rem;
     transform: rotate(-3.3deg); 
 `;
+
+const LogOutBtn = styled.button`
+    position: absolute;
+    top:3.4rem;
+    left: calc(3vw);
+    width: 6rem;
+    height: 2rem;
+    margin-top: 4rem;
+    background-color: #231F20;
+    color: white;
+    padding: 0.2rem;
+    border:none;
+    outline:none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transform: rotate(-4.13deg);
+`;
+
+const GoToSignIn = styled.button`
+    position: absolute;
+    top:3.4rem;
+    left: calc(3vw);
+    width: 6rem;
+    height: 2rem;
+    margin-top: 4rem;
+    background-color: #231F20;
+    color: white;
+    padding: 0.2rem;
+    border:none;
+    outline:none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transform: rotate(-4.13deg);
+`;
+

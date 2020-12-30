@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
+import { userContext } from "../contexts/userContext";
 import styled from "styled-components";
 import LoadingGif2 from "../assets/loading2.gif";
-import Loading from "./Loading";
+
 
 export default function Product({disable = false, id,imageKey,title,description,price}) {
     const [image, setImage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);   
+    const [isLoading, setIsLoading] = useState(false);
+    const { isLogged } = useContext(userContext);
 
     const fetchImage = async () => {
         setIsLoading(true);
@@ -26,7 +28,7 @@ export default function Product({disable = false, id,imageKey,title,description,
     return (
         
         <ProductContainer>
-            <Link to={`/reservation/${id}`} 
+            <Link to={isLogged ? `/reservation/${id}` : "/sign-in"} 
                 onClick={(e) => 
                 {if(disable) e.preventDefault()}}
             >

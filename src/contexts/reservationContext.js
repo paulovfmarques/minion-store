@@ -4,7 +4,7 @@ export const reservationContext = createContext();
 
 export default function ReservationProvider({ children }) {
   const [reservationDone, setReservationDone] = useState(false);
-  const [productsArr, setProductsArr] = useState("");
+  const [productsArr, setProductsArr] = useState([]);
 
   return (
     <reservationContext.Provider
