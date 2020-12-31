@@ -13,8 +13,6 @@ export default function Register() {
 
     const history = useHistory();
 
-    
-
     useEffect(() => {
         let invalidPwdAlert;
         clearTimeout(invalidPwdAlert);
@@ -37,11 +35,12 @@ export default function Register() {
                     email
                 }
             });
+            setHasToVerify(true);
+            history.push("/sign-in");
         }catch(err){
             console.log(err.message)
             alert("An error occured! Try again in a few moments");
         }
-        setHasToVerify(true);
     };
 
     return (

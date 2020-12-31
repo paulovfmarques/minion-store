@@ -13,6 +13,7 @@ import ProductList from "./pages/ProductList";
 import FormPage from "./pages/FormPage";
 import SuccessPage from "./pages/SuccessPage";
 import ReservationsPage from "./pages/ReservationsPage";
+import VerifyPage from "./pages/VerifyPage";
 
 
 //The mandatorySignIn flag for Auth is set to true because we want our users to be signed
@@ -92,6 +93,7 @@ function App() {
                 <Route path="/reservation/:id" component={FormPage}/>
                 <Route path="/success" component={SuccessPage}/>
                 <Route path="/my-reservations" component={ReservationsPage}/>
+                <Route path="/verify-email" component={VerifyPage}/>
               </Switch>
             )}
           </Router>

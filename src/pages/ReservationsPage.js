@@ -19,10 +19,10 @@ export default function ReservationsPage() {
         setIsLoading(true);
         try{
             result = await API.get("reservation",`/product-per-user/${user}`);
+            setReservationsArr(result);
         }catch(err){
             console.log(err);
         }
-        setReservationsArr(result);
         setIsLoading(false);
     };
 

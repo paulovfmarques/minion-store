@@ -1,60 +1,44 @@
 import React, { useState, useContext } from "react";
-import { useHistory } from "react-router-dom";
-import { userContext } from "../contexts/userContext";
 import styled from "styled-components";
+import { useHistory } from "react-router-dom";
 import { Auth } from "aws-amplify";
 import Spinner from "../assets/spinner.gif";
-import WhatGif from "../assets/what-gif.gif";
 
-export default function SignIn() {
-    const { isLogged, setIsLogged, setUser, setSessionEmail } = useContext(userContext);
+export default function VerifyPage() {
     const [email, setEmail] = useState("");
-    const [pwd, setPwd] = useState("");
+    const [code, setCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [wrongLogin, setWrongLogin] = useState(false);
+    const [wrongCode, setWrongCode] = useState(false);
 
     const history = useHistory();
 
-    if(isLogged) history.push("/");
-
-    const handleSignIn = async (e) => {
+    const handleVerify = async (e) => {
         e.preventDefault();
         setIsLoading(true);
 
-        let user;
-
-        try {
-            user = await Auth.signIn(email, pwd);
-            setUser(user.username);
-            setSessionEmail(email);
-            setIsLogged(true);
-            history.push("/");
-        } catch (e) {
-            if(e.message === "Incorrect username or password."){
-                setWrongLogin(true);
-                setTimeout(() => {
-                    setWrongLogin(false);
-                },3000);
-            }  
-            if(e.message === "User is not confirmed.") 
-                history.push("/verify-email");
+        try{
+            await Auth.confirmSignUp(email,code);
+            alert("Your e-mail is now verified!");
+            history.push("/sign-in");
+        }catch(err){
+            setWrongCode(true);
+            setTimeout(() => {
+                setWrongCode(false);
+            },2000);
         }
-        setIsLoading(false);
+        setIsLoading(false);        
     };
 
     return (
         <Container>
-            <SignInContainer>
-                <h1>WELCOME!</h1>
+            <VerifyContainer>
+                <h1>Verify your e-mail</h1>
                 {isLoading ? (
                     <img src={Spinner} alt="loading" />
-                ) : wrongLogin ? (
-                    <>
-                        <h2>Wrong e-mail or password!</h2>
-                        <img src={WhatGif} alt="wrong-login" />
-                    </>
+                ) : wrongCode ? (
+                        <h2>Wrong code!</h2>
                 ) : (
-                    <Form onSubmit={e => handleSignIn(e)}>
+                    <Form onSubmit={e => handleVerify(e)}>
                         <div>
                             <span>
                                 <label htmlFor="email">E-mail</label>
@@ -69,27 +53,27 @@ export default function SignIn() {
                                 placeholder="Enter your e-mail..."/>
                             </span>
                             <span>
-                                <label htmlFor="pwd">Password</label>
+                                <label htmlFor="code">Verification Code</label>
                                 <input
-                                value={pwd}
-                                onChange={e => setPwd(e.target.value)}
+                                value={code}
+                                onChange={e => setCode(e.target.value)}
                                 minLength="6"
-                                type="password" 
+                                type="text" 
                                 required 
-                                id="pwd" 
-                                name="pwd" 
-                                placeholder="Enter your password..."/>
+                                id="code" 
+                                name="code" 
+                                placeholder="Enter your code..."/>
                             </span>
                         </div>
                         <SignInButton type="submit">
-                            Sign-In
+                            Verify
                         </SignInButton>
-                        <p onClick={() => history.push("/register")}>
-                            Register now
+                        <p onClick={()=>history.push("/sign-in")}>
+                            Return to Sign In
                         </p>
                     </Form>
                 )}
-            </SignInContainer>
+            </VerifyContainer>
         </Container>
     );
 }
@@ -103,7 +87,7 @@ const Container = styled.div`
     justify-content:center;
     padding: 12rem 5rem 5rem 5rem;   
 `;
-const SignInContainer = styled.div`
+const VerifyContainer = styled.div`
     width: 40rem;
     height: auto;
     display:flex;
@@ -121,7 +105,7 @@ const SignInContainer = styled.div`
         font-family: var(--titleFont);
         color:#0A75BC;
         font-size: 2.5rem;
-        text-shadow: 2px 2px 2px #000000;
+        text-shadow: 1px 1px 1px #000000;
     }
 
     h2{
@@ -162,7 +146,7 @@ const Form = styled.form`
         display:flex;
         flex-direction:column;
 
-        input[type="password"]::placeholder{
+        input[type="text"]::placeholder{
             font-style:italic;
             text-align:center;            
         }        

@@ -1,4 +1,6 @@
 import React, { useContext } from "react";
+import { useHistory } from "react-router";
+import { userContext } from "../contexts/userContext";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { reservationContext } from "../contexts/reservationContext";
@@ -6,6 +8,10 @@ import ShoppingGif from "../assets/giphy.gif"
 
 export default function SuccessPage() {
     const { reservationDone } = useContext(reservationContext);
+    const { user } = useContext(userContext);
+
+    const history = useHistory();
+    if(!user) history.push("/sign-in");
 
     return (
         <Container>
