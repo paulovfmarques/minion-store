@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { API } from "aws-amplify";
 import { useHistory, useParams } from "react-router";
+import { userContext } from "../contexts/userContext";
 import Product from "../components/Product";
 import Loading from "../components/Loading";
 import { reservationContext } from "../contexts/reservationContext";
@@ -16,15 +17,16 @@ export default function FormPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     const { setReservationDone, productsArr } = useContext(reservationContext);
+    const { user } = useContext(userContext);    
 
     const { id } = useParams();
     const history = useHistory();
 
-    useEffect(() => setReservationDone(false),[]);     
+    if(!user) history.push("/sign-in");
 
-    const { attachment,
-            content,
-            } = productsArr.filter(prod => prod.minionId === id)[0];
+    useEffect(() => setReservationDone(false),[]);
+
+    const { attachment, content } = productsArr.filter(prod => prod.minionId === id)[0];
     
     const submitHandler = async (e) => {
         e.preventDefault();
@@ -46,9 +48,20 @@ export default function FormPage() {
             },
         };
 
+        const userProductObj = {
+            userId: user,
+            minionId: id,
+            content,
+            attachment,
+        }
+
         try{
             await API.put("reservation","/reservation",{
                 body: reservationObj,
+            });
+
+            await API.put("reservation", "/product-per-user", {
+                body: userProductObj,
             });
 
             await API.post("confirmation","/confirmation",{

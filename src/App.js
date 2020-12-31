@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
-import { Amplify } from "aws-amplify";
+import { Amplify, Auth } from "aws-amplify";
 import config from "./utils/config";
 import ReservationProvider from "./contexts/reservationContext";
 import UserProvider from "./contexts/userContext";
@@ -12,6 +12,7 @@ import Register from "./pages/RegisterPage";
 import ProductList from "./pages/ProductList";
 import FormPage from "./pages/FormPage";
 import SuccessPage from "./pages/SuccessPage";
+import ReservationsPage from "./pages/ReservationsPage";
 
 
 //The mandatorySignIn flag for Auth is set to true because we want our users to be signed
@@ -46,22 +47,53 @@ Amplify.configure({
 });
 
 function App() {
+  const [isLogged, setIsLogged] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
+  const [user, setUser] = useState(null);
+
+  async function persistentSignIn() {
+    setIsAuthenticating(true);
+    try {
+        const persistentUser = await Auth.currentSession();
+        setIsLogged(true);
+        setUser(persistentUser.accessToken.payload.username);
+    }
+    catch(err) {
+        console.log(err)
+    }
+    setIsAuthenticating(false);
+  }
+
+  useEffect(() => {
+    persistentSignIn();
+  },[]);    
+
 
   return (
-    <UserProvider>
+    <UserProvider
+      isLogged={isLogged}
+      setIsLogged={setIsLogged}
+      isAuthenticating={isAuthenticating}
+      setIsAuthenticating={setIsAuthenticating}
+      user={user}
+      setUser={setUser}
+    >
       <ReservationProvider>
         <GlobalStyle/>
           <Router>
             <Header/>
-
-            <Switch>
-              <Route path="/" exact component={ProductList}/>
-              <Route path="/sign-in" component={SignIn}/>
-              <Route path="/register" component={Register}/>
-              <Route path="/reservation/:id" component={FormPage}/>
-              <Route path="/success" component={SuccessPage}/>
-            </Switch>
-
+            {isAuthenticating ? (
+              ""
+            ) : (
+              <Switch>
+                <Route path="/" exact component={ProductList}/>
+                <Route path="/sign-in" component={SignIn}/>
+                <Route path="/register" component={Register}/>
+                <Route path="/reservation/:id" component={FormPage}/>
+                <Route path="/success" component={SuccessPage}/>
+                <Route path="/my-reservations" component={ReservationsPage}/>
+              </Switch>
+            )}
           </Router>
           <Footer/>
       </ReservationProvider>

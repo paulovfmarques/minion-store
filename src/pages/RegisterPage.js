@@ -1,68 +1,117 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { Auth } from "aws-amplify";
+import { useHistory } from "react-router";
 
 export default function Register() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [pwd, setPwd] = useState("");
     const [confirmPwd, setConfirmPwd] = useState("");
+    const [invalid, setInvalid] = useState(false);
+    const [hasToVerify, setHasToVerify] = useState(false);
+
+    const history = useHistory();
+
+    
+
+    useEffect(() => {
+        let invalidPwdAlert;
+        clearTimeout(invalidPwdAlert);
+
+        invalidPwdAlert = setTimeout(() => {
+            if(pwd !== confirmPwd) setInvalid(true)
+            else setInvalid(false)
+        },800);
+
+    },[confirmPwd]);    
+
+    const signUpHandler = async (e) => {
+        e.preventDefault();
+        
+        try{
+            await Auth.signUp({
+                username: email,
+                password: pwd,
+                attributes: {
+                    email
+                }
+            });
+        }catch(err){
+            console.log(err.message)
+            alert("An error occured! Try again in a few moments");
+        }
+        setHasToVerify(true);
+    };
 
     return (
         <Container>
             <RegisterContainer>
-                <h1>Create an account</h1>
-                <Form onSubmit={e => e.preventDefault()}>
-                    <div>
-                        <span>
-                            <label htmlFor="name">Name</label>
-                            <input
-                            autoFocus
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            type="text" 
-                            required 
-                            id="name" 
-                            name="name" 
-                            placeholder="Enter your name..."/>
-                        </span>
-                        <span>
-                            <label htmlFor="email">E-mail</label>
-                            <input
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            type="email" 
-                            required 
-                            id="email" 
-                            name="email" 
-                            placeholder="Enter your e-mail..."/>
-                        </span>
-                        <span>
-                            <label htmlFor="pwd">Password</label>
-                            <input
-                            value={pwd}
-                            onChange={e => setPwd(e.target.value)}
-                            minLength="6"
-                            type="password" 
-                            required 
-                            id="pwd" 
-                            name="pwd" 
-                            placeholder="Enter your password..."/>
-                        </span>
-                        <span>
-                            <label htmlFor="confirm-pwd">Password confirmation</label>
-                            <input
-                            value={confirmPwd}
-                            onChange={e => setConfirmPwd(e.target.value)}
-                            minLength="6"
-                            type="password" 
-                            required 
-                            id="confirm-pwd" 
-                            name="confirm-pwd" 
-                            placeholder="Enter your password again..."/>
-                        </span>
-                    </div>
-                    <ConfirmButton type="submit">Confirm</ConfirmButton>
-                </Form>
+                {hasToVerify ? (
+                    <h2>
+                        Please, check your email to verify it!
+                    </h2>
+                ) : (
+                    <>
+                    <h1>Create an account</h1>
+                    <Form onSubmit={e => signUpHandler(e)}>
+                        <div>
+                            <span>
+                                <label htmlFor="name">Name</label>
+                                <input
+                                autoFocus
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                type="text" 
+                                required 
+                                id="name" 
+                                name="name" 
+                                placeholder="Enter your name..."/>
+                            </span>
+                            <span>
+                                <label htmlFor="email">E-mail</label>
+                                <input
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                type="email" 
+                                required 
+                                id="email" 
+                                name="email" 
+                                placeholder="Enter your e-mail..."/>
+                            </span>
+                            <span>
+                                <label htmlFor="pwd">Password</label>
+                                <input
+                                value={pwd}
+                                onChange={e => setPwd(e.target.value)}
+                                minLength="6"
+                                type="password" 
+                                required 
+                                id="pwd" 
+                                name="pwd" 
+                                placeholder="Enter your password..."/>
+                            </span>
+                            <span>
+                                <label htmlFor="confirm-pwd">Password confirmation</label>
+                                <input
+                                value={confirmPwd}
+                                onChange={e => setConfirmPwd(e.target.value)}
+                                minLength="6"
+                                type="password" 
+                                required 
+                                id="confirm-pwd" 
+                                name="confirm-pwd" 
+                                placeholder="Enter your password again..."/>
+                            </span>
+                            <p>Password must contain at least one symbol</p>
+                            {invalid ? <strong>Passwords do not match!</strong> : ""}
+                        </div>
+                        <ConfirmButton disabled={invalid} type="submit">
+                            {invalid ? "Check your password" : "Confirm"}
+                        </ConfirmButton>
+                    </Form>
+                    </>
+                )}
             </RegisterContainer>
         </Container>
     );
@@ -79,7 +128,7 @@ const Container = styled.div`
 `;
 const RegisterContainer = styled.div`
     width: 30rem;
-    height: 30rem;
+    height:auto;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -91,16 +140,22 @@ const RegisterContainer = styled.div`
     background-color:#FCE029;
     box-shadow: 6px 7px 14px rgba(0, 0, 0, 0.63);
 
-    h1{
+    h2,h1{
+        text-align:center;
         font-family: var(--titleFont);
         color:#0A75BC;
         font-size: 2.5rem;
         text-shadow: 2px 2px 2px #000000;
         margin-bottom: 1rem;
     }
+
+    h2{
+        font-size: 2rem;
+    }
 `;
 
 const Form = styled.form`
+    position:relative;
     width:100%;
     height: 100%;
     display:flex;
@@ -113,6 +168,13 @@ const Form = styled.form`
         margin-top: 0.5rem;
         color: #0A75BC;
         cursor: pointer;
+    }
+
+    strong{        
+        position:absolute;
+        bottom: 4rem;
+        font-style: italic;
+        color: red;
     }
 
     & > div{
@@ -161,7 +223,7 @@ const Form = styled.form`
 `;
 
 const ConfirmButton = styled.button`
-    width: 8rem;
+    min-width: 8rem;
     height: 2rem;
     margin-top: 3rem;
     background-color: #231F20;

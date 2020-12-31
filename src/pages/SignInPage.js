@@ -3,61 +3,90 @@ import { useHistory } from "react-router-dom";
 import { userContext } from "../contexts/userContext";
 import styled from "styled-components";
 import { Auth } from "aws-amplify";
+import Spinner from "../assets/spinner.gif";
+import WhatGif from "../assets/what-gif.gif";
 
 export default function SignIn() {
-    const { setIsLogged } = useContext(userContext);    
-
+    const { isLogged, setIsLogged, setUser } = useContext(userContext);
     const [email, setEmail] = useState("admin@example.com");
     const [pwd, setPwd] = useState("JN4t24..");
+    const [isLoading, setIsLoading] = useState(false);
+    const [wrongLogin, setWrongLogin] = useState(false);
 
     const history = useHistory();
 
+    if(isLogged) history.push("/");
+
     const handleSignIn = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
 
         try {
-            await Auth.signIn(email, pwd);
+            const user = await Auth.signIn(email, pwd);
             setIsLogged(true);
-            history.push("/")
+            setUser(user.username);
+            history.push("/");
         } catch (e) {
-            alert(e.message);
+            setWrongLogin(true);
+            setTimeout(() => {
+                setWrongLogin(false);
+            },3000);
+
+            console.log(e.message)
+
+            // if(e.message === "User is not confirmed") 
+            // history.push("/verify-email");
         }
+        setIsLoading(false);
     };
 
     return (
         <Container>
             <SignInContainer>
                 <h1>WELCOME!</h1>
-                <Form onSubmit={e => handleSignIn(e)}>
-                    <div>
-                        <span>
-                            <label htmlFor="name">E-mail</label>
-                            <input
-                            autoFocus
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            type="email" 
-                            required 
-                            id="email" 
-                            name="email" 
-                            placeholder="Enter your e-mail..."/>
-                        </span>
-                        <span>
-                            <label htmlFor="cpf">Password</label>
-                            <input
-                            value={pwd}
-                            onChange={e => setPwd(e.target.value)}
-                            minLength="6"
-                            type="password" 
-                            required 
-                            id="pwd" 
-                            name="pwd" 
-                            placeholder="Enter your password..."/>
-                        </span>
-                    </div>
-                    <SignInButton type="submit">Sign-In</SignInButton>
-                    <p>Register now</p>
-                </Form>
+                {isLoading ? (
+                    <img src={Spinner} alt="loading" />
+                ) : wrongLogin ? (
+                    <>
+                        <h2>Wrong e-mail or password!</h2>
+                        <img src={WhatGif} alt="wrong-login" />
+                    </>
+                ) : (
+                    <Form onSubmit={e => handleSignIn(e)}>
+                        <div>
+                            <span>
+                                <label htmlFor="name">E-mail</label>
+                                <input
+                                autoFocus
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                type="email" 
+                                required 
+                                id="email" 
+                                name="email" 
+                                placeholder="Enter your e-mail..."/>
+                            </span>
+                            <span>
+                                <label htmlFor="cpf">Password</label>
+                                <input
+                                value={pwd}
+                                onChange={e => setPwd(e.target.value)}
+                                minLength="6"
+                                type="password" 
+                                required 
+                                id="pwd" 
+                                name="pwd" 
+                                placeholder="Enter your password..."/>
+                            </span>
+                        </div>
+                        <SignInButton type="submit">
+                            Sign-In
+                        </SignInButton>
+                        <p onClick={() => history.push("/register")}>
+                            Register now
+                        </p>
+                    </Form>
+                )}
             </SignInContainer>
         </Container>
     );
@@ -74,7 +103,7 @@ const Container = styled.div`
 `;
 const SignInContainer = styled.div`
     width: 40rem;
-    height: 20rem;
+    height: auto;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -91,6 +120,14 @@ const SignInContainer = styled.div`
         color:#0A75BC;
         font-size: 2.5rem;
         text-shadow: 2px 2px 2px #000000;
+    }
+
+    h2{
+        width:100%;
+        text-align:center;
+        color:#231F20;
+        font-size: 1.5rem;
+        margin: 1rem;
     }
 `;
 

@@ -13,6 +13,7 @@ export default function Header() {
         try{
             await Auth.signOut();
             setIsLogged(false);
+            history.push("/")
         }catch(err){
             console.log(err.message)
         }    
@@ -25,13 +26,21 @@ export default function Header() {
                 MINION STORE
             </h1>
             {isLogged ? (
-                <LogOutBtn onClick={() => logoutHandler()}>
-                    Logout
-                </LogOutBtn>
+                <>
+                    <Button onClick={() => logoutHandler()}>
+                        Logout
+                    </Button>
+
+                    <ReservationButton 
+                    onClick={() => history.push("/my-reservations")}
+                    >
+                        My Reservations
+                    </ReservationButton>
+                </>
             ) : (
-                <GoToSignIn onClick={() => history.push("sign-in")}>
+                <Button onClick={() => history.push("sign-in")}>
                     Sign In
-                </GoToSignIn>
+                </Button>
             )}
             
             <Logo src={LogoMinion}/>
@@ -41,6 +50,7 @@ export default function Header() {
 
 const Container = styled.div`
     position: fixed;
+    z-index: 9999;
     top:-4rem;
     left:-0.5rem;
     width: calc(100vw + 3rem);
@@ -79,11 +89,11 @@ const Logo = styled.img`
     transform: rotate(-3.3deg); 
 `;
 
-const LogOutBtn = styled.button`
+const Button = styled.button`
     position: absolute;
-    top:3.4rem;
+    top:5rem;
     left: calc(3vw);
-    width: 6rem;
+    min-width: 6rem;
     height: 2rem;
     margin-top: 4rem;
     background-color: #231F20;
@@ -96,11 +106,11 @@ const LogOutBtn = styled.button`
     transform: rotate(-4.13deg);
 `;
 
-const GoToSignIn = styled.button`
+const ReservationButton = styled.button`
     position: absolute;
-    top:3.4rem;
-    left: calc(3vw);
-    width: 6rem;
+    top:8rem;
+    left: calc(2.5vw);
+    min-width: 6rem;
     height: 2rem;
     margin-top: 4rem;
     background-color: #231F20;
@@ -112,4 +122,3 @@ const GoToSignIn = styled.button`
     cursor: pointer;
     transform: rotate(-4.13deg);
 `;
-
