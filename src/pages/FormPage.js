@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { API } from "aws-amplify";
 import { useHistory, useParams } from "react-router";
+import { userContext } from "../contexts/userContext";
 import Product from "../components/Product";
 import Loading from "../components/Loading";
 import { reservationContext } from "../contexts/reservationContext";
@@ -12,19 +13,19 @@ export default function FormPage() {
     const [name, setName] = useState("");
     const [cpf, setCpf] = useState("");
     const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const { setReservationDone, productsArr } = useContext(reservationContext);
+    const { user, sessionEmail } = useContext(userContext);
 
     const { id } = useParams();
     const history = useHistory();
 
-    useEffect(() => setReservationDone(false),[]);     
+    if(!user) history.push("/sign-in");
 
-    const { attachment,
-            content,
-            } = productsArr.filter(prod => prod.minionId === id)[0];
+    useEffect(() => setReservationDone(false),[]);
+
+    const { attachment, content } = productsArr.filter(prod => prod.minionId === id)[0];
     
     const submitHandler = async (e) => {
         e.preventDefault();
@@ -37,7 +38,7 @@ export default function FormPage() {
                     name,
                     cpf,
                     phone,
-                    email,
+                    sessionEmail,
                 },
                 product: {
                     title: content.title,
@@ -46,14 +47,25 @@ export default function FormPage() {
             },
         };
 
+        const userProductObj = {
+            userId: user,
+            minionId: id,
+            content,
+            attachment,
+        }
+
         try{
             await API.put("reservation","/reservation",{
                 body: reservationObj,
             });
 
+            await API.put("reservation", "/product-per-user", {
+                body: userProductObj,
+            });
+
             await API.post("confirmation","/confirmation",{
                 body: {
-                    toUser: email,
+                    toUser: sessionEmail,
                     subject: "Your purchase reservation is complete!",
                     emailContent: `You sucessfully reservated your ${content.title} for ${content.price}.
                     Check your info:
@@ -63,13 +75,17 @@ export default function FormPage() {
                     `,
                 },
             });
+            // setReservationDone(true);
+            //history.push("/success");
 
+            //This statements should be here, but will only work for
+            //SES verified users. For now, the application remains in the sandbox.
         }catch(err){
             console.log(err.message)
         }
         setIsLoading(false);
         setReservationDone(true);
-        history.push("/success")
+        history.push("/success");
     };
 
     return (
@@ -136,12 +152,11 @@ export default function FormPage() {
                             <span>
                                 <label htmlFor="email">E-Mail</label>
                                 <input
-                                onChange={e => setEmail(e.target.value)}
-                                value={email} 
+                                disabled
+                                value={sessionEmail} 
                                 type="email" 
                                 required id="email" 
-                                name="email" 
-                                placeholder="Enter your E-Mail..."/>
+                                name="email"/>
                             </span>
                         </div>
                         <CompleteButton type="submit">Complete</CompleteButton>

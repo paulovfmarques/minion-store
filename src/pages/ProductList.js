@@ -1,33 +1,25 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import styled from "styled-components";
-import { API } from "aws-amplify";
+import { userContext } from "../contexts/userContext";
 import { reservationContext } from "../contexts/reservationContext";
 import Product from "../components/Product";
 import Loading from "../components/Loading";
 
 export default function ProductList() {    
-    const { productsArr, setProductsArr } = useContext(reservationContext);
-    const [isLoading, setIsLoading] = useState(false);
+    const { listProducts, productsArr, isLoading } = useContext(reservationContext);
+    const { isLogged, isAuthenticating} = useContext(userContext);
 
-    const listProducts = async () => {
-        setIsLoading(true);
-        try{
-            const result = await API.get("list","/list");
-            setProductsArr(result);
-        }catch(err){
-            console.log(err)
-        }
-        setIsLoading(false);
-    };
-
-    useEffect(() => listProducts(),[]);    
-
+    useEffect(()=>{
+        listProducts()
+    },[])
+    
     return (
         <ListContainer>
-            {isLoading ? (
+            {isLoading || isAuthenticating ? (
                 <Loading />
             ) : (
                 <div>
+                    {isLogged? "" : <p>You are not logged in</p>}
                     {productsArr &&
                         productsArr.map(prod => {
                             return (
@@ -57,10 +49,17 @@ const ListContainer = styled.div`
     justify-content:center;
     
     & > div{
+        position:relative;        
         display: flex;
         align-items:center;
         justify-content:center;
         flex-wrap:wrap;
-        padding: 10rem 5rem 5rem 5rem;
+        padding: 10rem 0rem 5rem 0rem;
+
+        > p{
+            position: absolute;
+            top:7rem;
+            color: black;
+        }
     }
 `;

@@ -1,13 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
+import { userContext } from "../contexts/userContext";
 import styled from "styled-components";
 import LoadingGif2 from "../assets/loading2.gif";
-import Loading from "./Loading";
 
-export default function Product({disable = false, id,imageKey,title,description,price}) {
+
+export default function Product(
+    {disable = false, 
+    id,
+    imageKey,
+    title,
+    description,
+    price,
+    createdAt = false}) {
+
     const [image, setImage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);   
+    const [isLoading, setIsLoading] = useState(false);
+    const [date, setDate] = useState("");
+    const { isLogged } = useContext(userContext);
 
     const fetchImage = async () => {
         setIsLoading(true);
@@ -20,15 +31,26 @@ export default function Product({disable = false, id,imageKey,title,description,
         setIsLoading(false);
     };
 
-    useEffect(() => fetchImage(),[]);
+    useEffect(() => {
+        fetchImage();
+
+        if(createdAt){
+            const aux = new Date(parseInt(createdAt));
+            let d = aux.toDateString();
+            setDate(d);
+        }
+    },[date]);   
+    
+    
+    
     
 
     return (
         
         <ProductContainer>
-            <Link to={`/reservation/${id}`} 
+            <Link to={isLogged ? `/reservation/${id}` : "/sign-in"} 
                 onClick={(e) => 
-                {if(disable) e.preventDefault()}}
+                {if(disable || isLoading) e.preventDefault()}}
             >
                 <img src={isLoading ? LoadingGif2 : image} alt={title}/>
                 <div>
@@ -36,8 +58,17 @@ export default function Product({disable = false, id,imageKey,title,description,
                         <h1>{isLoading ? "loading" : title}</h1>
                         <p>{isLoading ? "loading" : price}</p>
                     </span>
+
                     <sub>
                         {isLoading ? "loading" : description}
+                        <br/>
+                        <br/>
+                        {createdAt ?
+                            isLoading ? 
+                            "loading" :
+                            `Purchased on ${date}` :
+                            ""
+                        }
                     </sub>
                 </div>
             </Link>
@@ -49,7 +80,7 @@ export default function Product({disable = false, id,imageKey,title,description,
 const ProductContainer = styled.div`
     width: 18rem;
     height: 20rem;
-    margin-left:5rem;
+    margin-left:2rem;
     margin-bottom: 3rem;
     border-radius: 2rem;
     border: 1px solid black;
